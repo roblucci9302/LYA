@@ -2,9 +2,19 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Colors } from '@/constants/Theme';
 
+interface BlobStyle {
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+  size: number;
+  color: string;
+  opacity: number;
+}
+
 // Formes décoratives abstraites pour les cards
 export function CardBlobs({ variant = 1 }: { variant?: 1 | 2 | 3 | 4 }) {
-  const blobStyles = {
+  const blobStyles: Record<1 | 2 | 3 | 4, BlobStyle[]> = {
     1: [
       { top: -20, right: -20, size: 60, color: Colors.accent1, opacity: 0.3 },
       { bottom: 10, left: -10, size: 40, color: Colors.primaryLight, opacity: 0.2 },

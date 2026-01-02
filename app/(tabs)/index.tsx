@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { Scan, ChevronRight, Sparkles, Clock } from 'lucide-react-native';
+import { Scan, ChevronRight, Sparkles, Clock, Tag } from 'lucide-react-native';
 import { getHistory } from '@/services/storage';
 import { ClothingItem } from '@/types';
 import { CardBlobs } from '@/components/DecorativeBlobs';
@@ -25,6 +25,10 @@ export default function HomeScreen() {
 
   const handleScan = () => {
     router.push('/scan');
+  };
+
+  const handleLabelScan = () => {
+    router.push('/label-scan');
   };
 
   const handleItemPress = (item: ClothingItem) => {
@@ -54,23 +58,42 @@ export default function HomeScreen() {
           <Logo size={140} />
         </View>
 
-        {/* Scan Button */}
-        <TouchableOpacity
-          style={styles.scanButton}
-          onPress={handleScan}
-          activeOpacity={0.9}
-        >
-          <View style={styles.scanButtonContent}>
-            <View style={styles.scanIconContainer}>
-              <Scan size={24} color={Colors.textWhite} strokeWidth={2} />
+        {/* Scan Buttons */}
+        <View style={styles.scanButtonsContainer}>
+          <TouchableOpacity
+            style={styles.scanButton}
+            onPress={handleScan}
+            activeOpacity={0.9}
+          >
+            <View style={styles.scanButtonContent}>
+              <View style={styles.scanIconContainer}>
+                <Scan size={24} color={Colors.textWhite} strokeWidth={2} />
+              </View>
+              <View style={styles.scanTextContainer}>
+                <Text style={styles.scanButtonTitle}>Code-barres</Text>
+                <Text style={styles.scanButtonSubtitle}>Scanner ou saisir</Text>
+              </View>
             </View>
-            <View style={styles.scanTextContainer}>
-              <Text style={styles.scanButtonTitle}>Scanner un vêtement</Text>
-              <Text style={styles.scanButtonSubtitle}>Code-barres ou référence</Text>
+            <ChevronRight size={24} color={Colors.textWhite} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.labelButton}
+            onPress={handleLabelScan}
+            activeOpacity={0.9}
+          >
+            <View style={styles.scanButtonContent}>
+              <View style={styles.labelIconContainer}>
+                <Tag size={24} color={Colors.primary} strokeWidth={2} />
+              </View>
+              <View style={styles.scanTextContainer}>
+                <Text style={styles.labelButtonTitle}>Étiquette</Text>
+                <Text style={styles.labelButtonSubtitle}>Photo des symboles</Text>
+              </View>
             </View>
-          </View>
-          <ChevronRight size={24} color={Colors.textWhite} />
-        </TouchableOpacity>
+            <ChevronRight size={24} color={Colors.primary} />
+          </TouchableOpacity>
+        </View>
 
         {/* Features */}
         <View style={styles.featuresRow}>
@@ -173,15 +196,48 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
+  scanButtonsContainer: {
+    gap: 12,
+    marginBottom: 24,
+  },
   scanButton: {
     backgroundColor: Colors.primary,
     borderRadius: BorderRadius.xl,
-    padding: 20,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 24,
     ...Shadows.large,
+  },
+  labelButton: {
+    backgroundColor: Colors.card,
+    borderRadius: BorderRadius.xl,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    ...Shadows.small,
+  },
+  labelIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.md,
+    backgroundColor: `${Colors.primary}15`,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  labelButtonTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+    marginBottom: 2,
+  },
+  labelButtonSubtitle: {
+    fontSize: 14,
+    color: Colors.textSecondary,
   },
   scanButtonContent: {
     flexDirection: 'row',

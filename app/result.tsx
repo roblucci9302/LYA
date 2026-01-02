@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  Platform,
+  TextInput,
+  Modal,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, Trash2, Droplets, Wind, Flame, Sparkles, Lightbulb, Pencil } from 'lucide-react-native';
+import { ArrowLeft, Trash2, Droplets, Wind, Flame, Sparkles, Lightbulb, Pencil, X } from 'lucide-react-native';
 import { getHistory, removeFromHistory, updateItemName } from '@/services/storage';
 import { ClothingItem, CareInstructions } from '@/types';
 import { CardBlobs } from '@/components/DecorativeBlobs';
@@ -11,6 +21,8 @@ export default function ResultScreen() {
   const router = useRouter();
   const { barcode } = useLocalSearchParams<{ itemId: string; barcode: string }>();
   const [item, setItem] = useState<ClothingItem | null>(null);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [newName, setNewName] = useState('');
 
   useEffect(() => {
     loadItem();
@@ -31,25 +43,15 @@ export default function ResultScreen() {
 
   const handleRename = () => {
     if (!item) return;
+    setNewName(item.name);
+    setShowRenameModal(true);
+  };
 
-    Alert.prompt(
-      'Renommer le vêtement',
-      'Entrez un nouveau nom pour ce vêtement',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Enregistrer',
-          onPress: async (newName) => {
-            if (newName && newName.trim()) {
-              await updateItemName(item.barcode, newName.trim());
-              setItem({ ...item, name: newName.trim() });
-            }
-          },
-        },
-      ],
-      'plain-text',
-      item.name
-    );
+  const confirmRename = async () => {
+    if (!item || !newName.trim()) return;
+    await updateItemName(item.barcode, newName.trim());
+    setItem({ ...item, name: newName.trim() });
+    setShowRenameModal(false);
   };
 
   if (!item) {
@@ -180,6 +182,50 @@ export default function ResultScreen() {
           <Text style={styles.barcodeText}>{item.barcode}</Text>
         </View>
       </ScrollView>
+
+      {/* Rename Modal */}
+      <Modal
+        visible={showRenameModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowRenameModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Renommer le vêtement</Text>
+              <TouchableOpacity
+                onPress={() => setShowRenameModal(false)}
+                style={styles.modalCloseButton}
+              >
+                <X size={20} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={styles.modalInput}
+              value={newName}
+              onChangeText={setNewName}
+              placeholder="Nom du vêtement"
+              placeholderTextColor={Colors.textLight}
+              autoFocus
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setShowRenameModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Annuler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalConfirmButton}
+                onPress={confirmRename}
+              >
+                <Text style={styles.modalConfirmText}>Enregistrer</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -478,5 +524,70 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textSecondary,
     fontFamily: 'monospace',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: Colors.card,
+    borderRadius: BorderRadius.xl,
+    padding: 24,
+    width: '100%',
+    maxWidth: 340,
+    ...Shadows.large,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  modalCloseButton: {
+    padding: 4,
+  },
+  modalInput: {
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: BorderRadius.md,
+    padding: 16,
+    fontSize: 16,
+    color: Colors.textPrimary,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalCancelButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.backgroundAlt,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+  },
+  modalConfirmButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+  },
+  modalConfirmText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.textWhite,
   },
 });
