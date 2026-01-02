@@ -1,0 +1,55 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#B8A4E3" />
+      <stop offset="100%" stop-color="#7B5FC4" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fond carré arrondi -->
+  <rect
+    x="0"
+    y="0"
+    width="1024"
+    height="1024"
+    rx="200"
+    fill="url(#bgGradient)"
+  />
+
+  <!-- Robe de bal - style SF Symbols -->
+  <g fill="#FFFFFF">
+    <!-- Bretelles fines et délicates -->
+    <path d="M455 330 Q430 300 410 270 L420 265 Q442 295 462 325 Z" />
+    <path d="M569 330 Q594 300 614 270 L604 265 Q582 295 562 325 Z" />
+
+    <!-- Bustier arrondi -->
+    <path d="M450 320 Q512 310 574 320 Q580 370 560 420 Q512 430 464 420 Q444 370 450 320 Z" />
+
+    <!-- Taille cintrée -->
+    <path d="M464 420 Q512 410 560 420 L555 460 Q512 450 469 460 Z" />
+
+    <!-- Jupe ample avec bas courbé -->
+    <path d="M469 460 Q370 520 260 800 Q512 840 764 800 Q654 520 555 460 Q512 450 469 460 Z" />
+  </g>
+
+  <!-- Sparkles - étincelles variées -->
+  <g fill="#FFFFFF">
+    <!-- Grande étoile haut gauche (extérieur) -->
+    <path d="M310 360 L330 420 L310 480 L290 420 Z" />
+
+    <!-- Petite étoile haut droite (extérieur) -->
+    <path d="M710 340 L720 370 L710 400 L700 370 Z" />
+
+    <!-- Moyenne étoile SUR la jupe gauche -->
+    <path d="M400 620 L415 665 L400 710 L385 665 Z" />
+
+    <!-- Grande étoile SUR la jupe droite -->
+    <path d="M600 580 L620 645 L600 710 L580 645 Z" />
+
+    <!-- Petite étoile SUR la jupe centre-bas -->
+    <path d="M500 720 L508 745 L500 770 L492 745 Z" />
+
+    <!-- Petite étoile extérieur bas droite -->
+    <path d="M720 650 L728 675 L720 700 L712 675 Z" opacity="0.85" />
+  </g>
+</svg>

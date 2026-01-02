@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert } from 'react-native';
 import { CameraView, useCameraPermissions, BarcodeScanningResult } from 'expo-camera';
 import { useRouter } from 'expo-router';
-import { X, Keyboard, Camera } from 'lucide-react-native';
+import { X, Type, Camera, Scan, Keyboard } from 'lucide-react-native';
 import { lookupBarcode, createClothingItem } from '@/services/barcodeApi';
 import { saveToHistory } from '@/services/storage';
+import { Colors, BorderRadius, Shadows } from '@/constants/Theme';
 
 export default function ScanScreen() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function ScanScreen() {
           params: { itemId: item.id, barcode: item.barcode },
         });
       } else {
-        Alert.alert('Erreur', response.error || 'Produit non trouvé', [
+        Alert.alert('Article non trouvé', response.error || 'Veuillez réessayer', [
           { text: 'Réessayer', onPress: () => setScanned(false) },
         ]);
       }
@@ -49,7 +50,7 @@ export default function ScanScreen() {
 
   const handleManualSubmit = () => {
     if (manualBarcode.trim().length < 4) {
-      Alert.alert('Erreur', 'Le code doit contenir au moins 4 caractères');
+      Alert.alert('Code invalide', 'Le code doit contenir au moins 4 caractères');
       return;
     }
     processBarcode(manualBarcode.trim());
@@ -58,6 +59,9 @@ export default function ScanScreen() {
   if (!permission) {
     return (
       <View style={styles.centerContainer}>
+        <View style={styles.loadingSpinner}>
+          <Scan size={32} color={Colors.primary} strokeWidth={2} />
+        </View>
         <Text style={styles.loadingText}>Chargement...</Text>
       </View>
     );
@@ -66,14 +70,18 @@ export default function ScanScreen() {
   if (!permission.granted) {
     return (
       <View style={styles.permissionContainer}>
-        <Camera size={64} color="#4361EE" />
-        <Text style={styles.permissionTitle}>Accès à la caméra</Text>
-        <Text style={styles.permissionText}>
-          Lya a besoin d'accéder à votre caméra pour scanner les codes-barres
-        </Text>
-        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
-          <Text style={styles.permissionButtonText}>Autoriser l'accès</Text>
-        </TouchableOpacity>
+        <View style={styles.permissionCard}>
+          <View style={styles.permissionIcon}>
+            <Camera size={40} color={Colors.primary} strokeWidth={1.5} />
+          </View>
+          <Text style={styles.permissionTitle}>Accès à la caméra</Text>
+          <Text style={styles.permissionText}>
+            Pour scanner les codes-barres de vos vêtements, Lya a besoin d'accéder à votre caméra.
+          </Text>
+          <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+            <Text style={styles.permissionButtonText}>Autoriser l'accès</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -81,31 +89,43 @@ export default function ScanScreen() {
   if (showManualInput) {
     return (
       <View style={styles.manualContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => setShowManualInput(false)}>
-          <X size={28} color="#1A1A2E" />
-        </TouchableOpacity>
+        {/* Header */}
+        <View style={styles.manualHeader}>
+          <TouchableOpacity onPress={() => setShowManualInput(false)} style={styles.backButton}>
+            <X size={24} color={Colors.textPrimary} strokeWidth={2} />
+          </TouchableOpacity>
+          <Text style={styles.manualHeaderTitle}>Saisie manuelle</Text>
+          <View style={{ width: 44 }} />
+        </View>
 
         <View style={styles.manualContent}>
-          <Keyboard size={48} color="#4361EE" />
-          <Text style={styles.manualTitle}>Entrer le code manuellement</Text>
+          <View style={styles.manualIconContainer}>
+            <Keyboard size={48} color={Colors.primary} strokeWidth={1.5} />
+          </View>
+
+          <Text style={styles.manualTitle}>Entrez le code</Text>
           <Text style={styles.manualSubtitle}>
-            Saisissez le code-barres ou la référence du vêtement
+            Saisissez le code-barres ou la référence inscrite sur l'étiquette de votre vêtement.
           </Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Ex: 3614271303851"
-            placeholderTextColor="#9CA3AF"
-            keyboardType="default"
-            value={manualBarcode}
-            onChangeText={setManualBarcode}
-            autoFocus
-          />
+          <View style={styles.inputCard}>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex: 3760123456789"
+              placeholderTextColor={Colors.textLight}
+              value={manualBarcode}
+              onChangeText={setManualBarcode}
+              autoFocus
+              autoCapitalize="characters"
+              keyboardType="default"
+            />
+          </View>
 
           <TouchableOpacity
             style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
             onPress={handleManualSubmit}
             disabled={isLoading}
+            activeOpacity={0.9}
           >
             <Text style={styles.submitButtonText}>
               {isLoading ? 'Recherche...' : 'Rechercher'}
@@ -131,19 +151,33 @@ export default function ScanScreen() {
       <View style={styles.overlay}>
         {/* Top bar */}
         <View style={styles.topBar}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <X size={28} color="#FFFFFF" />
+          <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
+            <X size={24} color={Colors.textWhite} strokeWidth={2} />
           </TouchableOpacity>
           <Text style={styles.topBarTitle}>Scanner</Text>
-          <View style={{ width: 28 }} />
+          <View style={{ width: 44 }} />
         </View>
 
         {/* Scan area */}
         <View style={styles.scanArea}>
-          <View style={styles.scanFrame} />
-          <Text style={styles.scanHint}>
-            {isLoading ? 'Recherche en cours...' : 'Placez le code-barres dans le cadre'}
-          </Text>
+          {/* Scan frame with rounded corners */}
+          <View style={styles.scanFrame}>
+            <View style={[styles.corner, styles.cornerTL]} />
+            <View style={[styles.corner, styles.cornerTR]} />
+            <View style={[styles.corner, styles.cornerBL]} />
+            <View style={[styles.corner, styles.cornerBR]} />
+
+            {/* Animated scan line */}
+            <View style={styles.scanLineContainer}>
+              <View style={styles.scanLine} />
+            </View>
+          </View>
+
+          <View style={styles.hintContainer}>
+            <Text style={styles.scanHint}>
+              {isLoading ? 'Analyse en cours...' : 'Placez le code-barres dans le cadre'}
+            </Text>
+          </View>
         </View>
 
         {/* Bottom actions */}
@@ -151,8 +185,10 @@ export default function ScanScreen() {
           <TouchableOpacity
             style={styles.manualButton}
             onPress={() => setShowManualInput(true)}
+            activeOpacity={0.9}
           >
-            <Text style={styles.manualButtonText}>Entrer manuellement</Text>
+            <Type size={20} color={Colors.textWhite} strokeWidth={2} />
+            <Text style={styles.manualButtonText}>Saisie manuelle</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -163,99 +199,156 @@ export default function ScanScreen() {
 const styles = StyleSheet.create({
   centerContainer: {
     flex: 1,
-    backgroundColor: '#1A1A2E',
+    backgroundColor: Colors.background,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  loadingSpinner: {
+    width: 80,
+    height: 80,
+    borderRadius: BorderRadius.xl,
+    backgroundColor: `${Colors.primary}15`,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
   loadingText: {
-    color: '#FFFFFF',
+    color: Colors.textSecondary,
     fontSize: 16,
   },
   permissionContainer: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.background,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
+  },
+  permissionCard: {
+    backgroundColor: Colors.card,
+    borderRadius: BorderRadius.xxl,
+    padding: 32,
+    alignItems: 'center',
+    width: '100%',
+    ...Shadows.medium,
+  },
+  permissionIcon: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: `${Colors.primary}15`,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
   },
   permissionTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '600',
-    color: '#1A1A2E',
-    marginTop: 24,
-    marginBottom: 8,
+    color: Colors.textPrimary,
+    marginBottom: 12,
   },
   permissionText: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 15,
+    color: Colors.textSecondary,
     textAlign: 'center',
     marginBottom: 32,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   permissionButton: {
-    backgroundColor: '#4361EE',
+    backgroundColor: Colors.primary,
     paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 30,
+    borderRadius: BorderRadius.xl,
+    ...Shadows.large,
   },
   permissionButtonText: {
-    color: '#FFFFFF',
+    color: Colors.textWhite,
     fontSize: 16,
     fontWeight: '600',
   },
   manualContainer: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.background,
+  },
+  manualHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
     paddingTop: 60,
+    paddingBottom: 16,
   },
   backButton: {
-    position: 'absolute',
-    top: 60,
-    left: 24,
-    zIndex: 10,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Shadows.small,
+  },
+  manualHeaderTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.textPrimary,
   },
   manualContent: {
     flex: 1,
-    alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 60,
+    paddingTop: 40,
+    alignItems: 'center',
   },
-  manualTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#1A1A2E',
-    marginTop: 20,
-    marginBottom: 8,
-  },
-  manualSubtitle: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
+  manualIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: `${Colors.primary}15`,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 32,
   },
-  input: {
-    width: '100%',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    fontSize: 18,
-    color: '#1A1A2E',
+  manualTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginBottom: 12,
+  },
+  manualSubtitle: {
+    fontSize: 15,
+    color: Colors.textSecondary,
     textAlign: 'center',
+    marginBottom: 40,
+    lineHeight: 22,
+    paddingHorizontal: 16,
+  },
+  inputCard: {
+    width: '100%',
+    backgroundColor: Colors.card,
+    borderRadius: BorderRadius.xl,
+    padding: 4,
+    marginBottom: 24,
+    ...Shadows.small,
+  },
+  input: {
+    fontSize: 18,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
   },
   submitButton: {
-    backgroundColor: '#4361EE',
-    paddingVertical: 16,
-    paddingHorizontal: 48,
-    borderRadius: 30,
-    marginTop: 24,
+    width: '100%',
+    backgroundColor: Colors.primary,
+    paddingVertical: 18,
+    borderRadius: BorderRadius.xl,
+    alignItems: 'center',
+    ...Shadows.large,
   },
   submitButtonDisabled: {
-    opacity: 0.6,
+    backgroundColor: Colors.textLight,
   },
   submitButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
+    color: Colors.textWhite,
+    fontSize: 17,
     fontWeight: '600',
   },
   cameraContainer: {
@@ -269,11 +362,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 60,
   },
+  closeButton: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.md,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   topBarTitle: {
-    color: '#FFFFFF',
+    color: Colors.textWhite,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -285,29 +386,84 @@ const styles = StyleSheet.create({
   scanFrame: {
     width: 280,
     height: 280,
-    borderRadius: 24,
-    borderWidth: 4,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    position: 'relative',
+  },
+  corner: {
+    position: 'absolute',
+    width: 50,
+    height: 50,
+    borderColor: Colors.primary,
+  },
+  cornerTL: {
+    top: 0,
+    left: 0,
+    borderTopWidth: 4,
+    borderLeftWidth: 4,
+    borderTopLeftRadius: BorderRadius.lg,
+  },
+  cornerTR: {
+    top: 0,
+    right: 0,
+    borderTopWidth: 4,
+    borderRightWidth: 4,
+    borderTopRightRadius: BorderRadius.lg,
+  },
+  cornerBL: {
+    bottom: 0,
+    left: 0,
+    borderBottomWidth: 4,
+    borderLeftWidth: 4,
+    borderBottomLeftRadius: BorderRadius.lg,
+  },
+  cornerBR: {
+    bottom: 0,
+    right: 0,
+    borderBottomWidth: 4,
+    borderRightWidth: 4,
+    borderBottomRightRadius: BorderRadius.lg,
+  },
+  scanLineContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: 20,
+    right: 20,
+  },
+  scanLine: {
+    height: 3,
+    backgroundColor: Colors.primary,
+    borderRadius: 2,
+    opacity: 0.8,
+  },
+  hintContainer: {
+    marginTop: 32,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: BorderRadius.full,
   },
   scanHint: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 16,
-    marginTop: 24,
+    color: Colors.textWhite,
+    fontSize: 14,
     textAlign: 'center',
   },
   bottomBar: {
     alignItems: 'center',
-    paddingBottom: 50,
+    paddingBottom: 60,
+    paddingHorizontal: 24,
   },
   manualButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 25,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primary,
+    paddingVertical: 16,
+    paddingHorizontal: 28,
+    borderRadius: BorderRadius.xl,
+    ...Shadows.large,
   },
   manualButtonText: {
-    color: '#FFFFFF',
+    color: Colors.textWhite,
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
+    marginLeft: 10,
   },
 });

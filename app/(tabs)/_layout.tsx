@@ -1,25 +1,31 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Home, Camera, Clock } from 'lucide-react-native';
+import { View, StyleSheet } from 'react-native';
+import { Home, Scan, Clock } from 'lucide-react-native';
+import { Colors, BorderRadius, Shadows } from '@/constants/Theme';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#4361EE',
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.textLight,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopWidth: 1,
-          borderTopColor: '#F3F4F6',
-          height: 85,
-          paddingTop: 10,
-          paddingBottom: 25,
+          backgroundColor: Colors.card,
+          borderTopWidth: 0,
+          height: 90,
+          paddingTop: 8,
+          paddingBottom: 28,
+          ...Shadows.medium,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: '500',
+          marginTop: 2,
+        },
+        tabBarIconStyle: {
+          marginBottom: 0,
         },
       }}
     >
@@ -27,23 +33,52 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Accueil',
-          tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <View style={focused ? styles.activeIconContainer : undefined}>
+              <Home size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="scan"
         options={{
           title: 'Scanner',
-          tabBarIcon: ({ color, size }) => <Camera size={size} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <View style={[styles.scanIcon, focused && styles.scanIconActive]}>
+              <Scan size={20} color={focused ? Colors.textWhite : color} strokeWidth={2} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
-          title: 'Historique',
-          tabBarIcon: ({ color, size }) => <Clock size={size} color={color} />,
+          title: 'Garde-robe',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={focused ? styles.activeIconContainer : undefined}>
+              <Clock size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+            </View>
+          ),
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  activeIconContainer: {
+    // Subtle style for active icon
+  },
+  scanIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: BorderRadius.md,
+    backgroundColor: `${Colors.primary}15`,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scanIconActive: {
+    backgroundColor: Colors.primary,
+  },
+});

@@ -49,3 +49,17 @@ export async function clearHistory(): Promise<void> {
     console.error('Error clearing history:', error);
   }
 }
+
+export async function updateItemName(barcode: string, newName: string): Promise<void> {
+  try {
+    const history = await getHistory();
+    const index = history.findIndex(h => h.barcode === barcode);
+
+    if (index >= 0) {
+      history[index].name = newName;
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+    }
+  } catch (error) {
+    console.error('Error updating item name:', error);
+  }
+}

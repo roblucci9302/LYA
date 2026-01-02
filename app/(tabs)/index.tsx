@@ -1,9 +1,12 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { Shirt, Camera, Clock, ChevronRight } from 'lucide-react-native';
+import { Scan, ChevronRight, Sparkles, Clock } from 'lucide-react-native';
 import { getHistory } from '@/services/storage';
 import { ClothingItem } from '@/types';
+import { CardBlobs } from '@/components/DecorativeBlobs';
+import Logo from '@/components/Logo';
+import { Colors, Shadows, BorderRadius } from '@/constants/Theme';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -17,7 +20,7 @@ export default function HomeScreen() {
 
   const loadRecentItems = async () => {
     const history = await getHistory();
-    setRecentItems(history.slice(0, 3));
+    setRecentItems(history.slice(0, 4));
   };
 
   const handleScan = () => {
@@ -31,238 +34,299 @@ export default function HomeScreen() {
     });
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "À l'instant";
-    if (diffMins < 60) return `Il y a ${diffMins} min`;
-    if (diffHours < 24) return `Il y a ${diffHours}h`;
-    if (diffDays < 7) return `Il y a ${diffDays}j`;
-    return date.toLocaleDateString('fr-FR');
-  };
-
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Shirt size={36} color="#4361EE" />
-          <Text style={styles.logoText}>Lya</Text>
-        </View>
-        <Text style={styles.tagline}>Prenez soin de vos vêtements</Text>
-      </View>
-
-      {/* Scan Button */}
-      <TouchableOpacity style={styles.scanButton} onPress={handleScan}>
-        <View style={styles.scanButtonInner}>
-          <Camera size={48} color="#FFFFFF" />
-        </View>
-        <Text style={styles.scanButtonText}>Scanner un vêtement</Text>
-        <Text style={styles.scanButtonSubtext}>Code-barres ou référence</Text>
-      </TouchableOpacity>
-
-      {/* Recent Items */}
-      {recentItems.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Récemment scannés</Text>
-          {recentItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.itemCard}
-              onPress={() => handleItemPress(item)}
-            >
-              <View style={styles.itemIcon}>
-                <Shirt size={24} color="#4361EE" />
-              </View>
-              <View style={styles.itemInfo}>
-                <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
-                {item.brand && <Text style={styles.itemBrand}>{item.brand}</Text>}
-                <View style={styles.itemMeta}>
-                  <Clock size={12} color="#9CA3AF" />
-                  <Text style={styles.itemDate}>{formatDate(item.scannedAt)}</Text>
-                </View>
-              </View>
-              <View style={styles.itemRight}>
-                <View style={styles.tempBadge}>
-                  <Text style={styles.tempText}>
-                    {item.careInstructions.washTemperature
-                      ? `${item.careInstructions.washTemperature}°C`
-                      : 'Main'}
-                  </Text>
-                </View>
-                <ChevronRight size={20} color="#9CA3AF" />
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-
-      {/* Empty State */}
-      {recentItems.length === 0 && (
-        <View style={styles.emptyState}>
-          <View style={styles.emptyIcon}>
-            <Shirt size={40} color="#9CA3AF" />
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>Bonjour !</Text>
+            <Text style={styles.title}>Prenez soin de{'\n'}vos vêtements</Text>
           </View>
-          <Text style={styles.emptyText}>
-            Scannez votre premier vêtement{'\n'}pour commencer
-          </Text>
         </View>
-      )}
-    </ScrollView>
+
+        {/* Hero Section with Logo */}
+        <View style={styles.heroSection}>
+          <Logo size={140} />
+        </View>
+
+        {/* Scan Button */}
+        <TouchableOpacity
+          style={styles.scanButton}
+          onPress={handleScan}
+          activeOpacity={0.9}
+        >
+          <View style={styles.scanButtonContent}>
+            <View style={styles.scanIconContainer}>
+              <Scan size={24} color={Colors.textWhite} strokeWidth={2} />
+            </View>
+            <View style={styles.scanTextContainer}>
+              <Text style={styles.scanButtonTitle}>Scanner un vêtement</Text>
+              <Text style={styles.scanButtonSubtitle}>Code-barres ou référence</Text>
+            </View>
+          </View>
+          <ChevronRight size={24} color={Colors.textWhite} />
+        </TouchableOpacity>
+
+        {/* Features */}
+        <View style={styles.featuresRow}>
+          <View style={styles.featureCard}>
+            <View style={[styles.featureIcon, { backgroundColor: `${Colors.accent3}20` }]}>
+              <Sparkles size={20} color={Colors.accent3} />
+            </View>
+            <Text style={styles.featureText}>Instructions{'\n'}précises</Text>
+          </View>
+          <View style={styles.featureCard}>
+            <View style={[styles.featureIcon, { backgroundColor: `${Colors.accent2}20` }]}>
+              <Clock size={20} color={Colors.accent2} />
+            </View>
+            <Text style={styles.featureText}>Historique{'\n'}sauvegardé</Text>
+          </View>
+        </View>
+
+        {/* Recent Items */}
+        {recentItems.length > 0 && (
+          <View style={styles.recentSection}>
+            <Text style={styles.sectionTitle}>Récemment scannés</Text>
+            <View style={styles.recentGrid}>
+              {recentItems.map((item, index) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.recentCard}
+                  onPress={() => handleItemPress(item)}
+                  activeOpacity={0.8}
+                >
+                  <CardBlobs variant={((index % 4) + 1) as 1 | 2 | 3 | 4} />
+                  <View style={styles.recentCardContent}>
+                    <View style={styles.recentInitial}>
+                      <Text style={styles.recentInitialText}>
+                        {item.name.charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                    <Text style={styles.recentName} numberOfLines={1}>{item.name}</Text>
+                    <View style={styles.recentTempBadge}>
+                      <Text style={styles.recentTempText}>
+                        {item.careInstructions.washTemperature
+                          ? `${item.careInstructions.washTemperature}°C`
+                          : 'Main'}
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Empty State */}
+        {recentItems.length === 0 && (
+          <View style={styles.emptyCard}>
+            <CardBlobs variant={1} />
+            <View style={styles.emptyContent}>
+              <View style={styles.emptyIcon}>
+                <Scan size={32} color={Colors.primary} />
+              </View>
+              <Text style={styles.emptyTitle}>Votre garde-robe vous attend</Text>
+              <Text style={styles.emptyText}>
+                Scannez votre premier vêtement pour découvrir ses instructions d'entretien
+              </Text>
+            </View>
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.background,
   },
-  content: {
-    paddingHorizontal: 24,
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 40,
   },
   header: {
-    alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 24,
   },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  logoText: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: '#1A1A2E',
-    marginLeft: 10,
-  },
-  tagline: {
+  greeting: {
     fontSize: 16,
-    color: '#9CA3AF',
+    color: Colors.textSecondary,
+    marginBottom: 4,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    lineHeight: 36,
+  },
+  heroSection: {
+    alignItems: 'center',
+    marginBottom: 24,
   },
   scanButton: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  scanButtonInner: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#4361EE',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#4361EE',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  scanButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1A1A2E',
-    marginTop: 16,
-  },
-  scanButtonSubtext: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    marginTop: 4,
-  },
-  section: {
-    marginTop: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1A1A2E',
-    marginBottom: 16,
-  },
-  itemCard: {
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.xl,
+    padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    ...Shadows.large,
   },
-  itemIcon: {
+  scanButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  scanIconContainer: {
     width: 48,
     height: 48,
-    borderRadius: 12,
-    backgroundColor: '#EEF2FF',
+    borderRadius: BorderRadius.md,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
   },
-  itemInfo: {
+  scanTextContainer: {
     flex: 1,
   },
-  itemName: {
-    fontSize: 16,
+  scanButtonTitle: {
+    fontSize: 18,
     fontWeight: '600',
-    color: '#1A1A2E',
+    color: Colors.textWhite,
+    marginBottom: 2,
   },
-  itemBrand: {
+  scanButtonSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
+    color: 'rgba(255,255,255,0.7)',
   },
-  itemMeta: {
+  featuresRow: {
     flexDirection: 'row',
+    gap: 12,
+    marginBottom: 32,
+  },
+  featureCard: {
+    flex: 1,
+    backgroundColor: Colors.card,
+    borderRadius: BorderRadius.xl,
+    padding: 16,
     alignItems: 'center',
-    marginTop: 4,
+    ...Shadows.small,
   },
-  itemDate: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    marginLeft: 4,
-  },
-  itemRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  tempBadge: {
-    backgroundColor: '#EEF2FF',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 8,
-  },
-  tempText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#4361EE',
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#F3F4F6',
+  featureIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 12,
+  },
+  featureText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  recentSection: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.textPrimary,
     marginBottom: 16,
   },
-  emptyText: {
-    fontSize: 16,
-    color: '#9CA3AF',
+  recentGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  recentCard: {
+    width: '47%',
+    backgroundColor: Colors.card,
+    borderRadius: BorderRadius.xl,
+    padding: 16,
+    overflow: 'hidden',
+    position: 'relative',
+    ...Shadows.small,
+  },
+  recentCardContent: {
+    zIndex: 10,
+  },
+  recentInitial: {
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.backgroundAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  recentInitialText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  recentName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: Colors.textPrimary,
+    marginBottom: 8,
+  },
+  recentTempBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.full,
+  },
+  recentTempText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.textWhite,
+  },
+  emptyCard: {
+    backgroundColor: Colors.card,
+    borderRadius: BorderRadius.xxl,
+    padding: 32,
+    overflow: 'hidden',
+    position: 'relative',
+    ...Shadows.small,
+  },
+  emptyContent: {
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  emptyIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: `${Colors.primary}15`,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+    marginBottom: 8,
     textAlign: 'center',
-    lineHeight: 24,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
